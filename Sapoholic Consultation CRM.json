@@ -1,0 +1,392 @@
+{
+  "name": "Sapoholic Consultation CRM",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1g2psjWXbZok6MOpH4f1dEjN78IRnXTaPkaRBhmEuuMI",
+          "mode": "list",
+          "cachedResultName": "Consultation Form Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g2psjWXbZok6MOpH4f1dEjN78IRnXTaPkaRBhmEuuMI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1939685881,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g2psjWXbZok6MOpH4f1dEjN78IRnXTaPkaRBhmEuuMI/edit#gid=1939685881"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "55555547-75ea-4a68-9c68-88b8ff2431ff",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "ft25b4yCwqJ7UWMo",
+          "name": "Google Sheets Trigger OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "Thank you for your enquiry",
+        "message": "=<p>Hi {{ $json.Name }},</p>\n\n<p>Thank you for contacting <strong>Sapoholic Labs</strong>.</p>\n\n<p>We've received your enquiry regarding <strong> {{ $json['Which of our services do you need?'] }}</strong>.</p>\n\n<p>Our team is reviewing your request and will get back to you within <strong>24–48 business hours</strong> with a suitable response.</p>\n\n<p>We look forward to serving you!</p>\n\n<p>Warm regards,<br>\n<strong>Sapoholic Labs</strong></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        80
+      ],
+      "id": "1f7c4537-9f5c-4142-9384-212223b81cd8",
+      "name": "Send a message",
+      "webhookId": "7d3e1e2e-b86f-4c13-9397-ba08143e721d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mp19T4Z2WuCFe7Xl",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are an AI Client Consultation Assistant for Sapoholic Labs, a cosmetic manufacturing laboratory specializing in Formula Development, Custom Formulation, Private Label, Contract Manufacturing, and Cosmetic Ebooks & Formulas.\n\nYour role is to analyze every client enquiry and help the sales team respond faster and prioritize leads.\n\nBased on the client's enquiry:\n\n1. Summarize the enquiry in 1–2 sentences.\n2. Determine the Lead Score:\n   - Hot = Ready to start soon or serious buyer.\n   - Warm = Interested but needs more information.\n   - Cold = General enquiry or low buying intent.\n3. Determine the Priority:\n   - High\n   - Medium\n   - Low\n4. Estimate the potential project value:\n   - Low\n   - Medium\n   - High\n5. Recommend the next action the Sapoholic Labs team should take.\n6. Write a warm, professional reply that can be sent directly to the client.\n7. Set the enquiry status to \"Pending\".\n\nReturn ONLY valid JSON in the exact format below. Do not include markdown, explanations, or any text before or after the JSON.\n\n{\n  \"ai_summary\": \"\",\n  \"lead_score\": \"\",\n  \"priority\": \"\",\n  \"estimated_value\": \"\",\n  \"next_step\": \"\",\n  \"suggested_reply\": \"\",\n  \"status\": \"Pending\"\n}\n\nClient Details\n\nName: {{$('Google Sheets Trigger').item.json.Name}}\n\nEmail: {{$('Google Sheets Trigger').item.json.Email}}\n\nWhatsApp: {{$('Google Sheets Trigger').item.json[\"Whatsapp No.\"]}}\n\nService: {{$('Google Sheets Trigger').item.json[\"Which of services do you need?\"]}}\n\nQuestion: {{$('Google Sheets Trigger').item.json[\"Ask your questions here.\"]}}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        176,
+        -80
+      ],
+      "id": "53c94d46-7363-4bac-b77b-a972561d20b8",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": null,
+          "name": "",
+          "__aiGatewayManaged": true
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "##########",
+        "text": "=🚨 New Sapoholic Labs Enquiry  \n\n👤 Name: {{$('Google Sheets Trigger').item.json.Name}}  \n📧 Email: {{$('Google Sheets Trigger').item.json.Email}}  \n📱 WhatsApp: {{$('Google Sheets Trigger').item.json[\"Whatsapp No.\"]}}  \n🧴 Service: {{ $json['Which of our services do you need?'] }}\n\n🤖 AI Analysis: {{$json.ai_summary}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        -80
+      ],
+      "id": "250b5d6e-6a4c-48f7-81fd-0ee8e4646bdb",
+      "name": "Send a text message",
+      "webhookId": "be5551d7-2091-41d3-ba4b-6cb9ab1104ff",
+      "credentials": {
+        "telegramApi": {
+          "id": "dnJVqhAo10S69RJl",
+          "name": "Sapoholic Enquiry Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const parsed = JSON.parse($json.output[0].content[0].text);\n\nreturn {\n  json: {\n    ...$('Google Sheets Trigger').item.json,\n    ...parsed,\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        -80
+      ],
+      "id": "cdcf7157-ed64-452c-97a6-bddc6fd877b3",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1g2psjWXbZok6MOpH4f1dEjN78IRnXTaPkaRBhmEuuMI",
+          "mode": "list",
+          "cachedResultName": "Consultation Form Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g2psjWXbZok6MOpH4f1dEjN78IRnXTaPkaRBhmEuuMI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1939685881,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1g2psjWXbZok6MOpH4f1dEjN78IRnXTaPkaRBhmEuuMI/edit#gid=1939685881"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Google Sheets Trigger').item.json.Email }}",
+            "Timestamp": "={{ $('Google Sheets Trigger').item.json.Timestamp }}",
+            "Name": "={{ $('Google Sheets Trigger').item.json.Name }}",
+            "Surname": "={{ $('Google Sheets Trigger').item.json.Surname }}",
+            "Nationality": "={{ $('Google Sheets Trigger').item.json.Nationality }}",
+            "Whatsapp No.": "={{ $('Google Sheets Trigger').item.json['Whatsapp No.'] }}",
+            "Which of our services do you need?": "={{ $('Google Sheets Trigger').item.json['Which of services do you need?'] }}",
+            "Ask your questions here.": "={{ $('Google Sheets Trigger').item.json['Ask your questions here.'] }}",
+            "AI Summary": "={{ $('Code in JavaScript').item.json.ai_summary }}",
+            "Lead Score": "={{ $('Code in JavaScript').item.json.lead_score }}",
+            "Priority": "={{ $('Code in JavaScript').item.json.priority }}",
+            "Next Step": "={{ $('Code in JavaScript').item.json.next_step }}",
+            "Suggested Reply": "={{ $('Code in JavaScript').item.json.suggested_reply }}",
+            "Status": "={{ $('Code in JavaScript').item.json.status }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Surname",
+              "displayName": "Surname",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Nationality",
+              "displayName": "Nationality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Whatsapp No.",
+              "displayName": "Whatsapp No.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Which of our services do you need?",
+              "displayName": "Which of our services do you need?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ask your questions here.",
+              "displayName": "Ask your questions here.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Summary",
+              "displayName": "AI Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Score",
+              "displayName": "Lead Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Priority",
+              "displayName": "Priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Next Step",
+              "displayName": "Next Step",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Suggested Reply",
+              "displayName": "Suggested Reply",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        -16
+      ],
+      "id": "5b2415e5-5331-4b9d-82a4-25eb7c9fe36b",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XzMPa9JMJBKxCzMY",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dedf0e8f-2d39-48be-a044-c210c95aa5b0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5752ae4a91bbea8044dd53847daaa61b06677c579ce5610c23b444bb0ee9847f"
+  },
+  "nodeGroups": [],
+  "id": "fjKNyCO15x0SlR2V",
+  "tags": []
+}
